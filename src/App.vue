@@ -3,7 +3,7 @@
     <section class="section">
       <div class="container has-text-centered">
         <h1 class="title">
-          Hello World
+          Hello World - GA
         </h1>
         <p class="subtitle">
           My first website with
