@@ -21,25 +21,6 @@
               v-model="searchQuery"
             >
           </div>
-          
-          <div class="tags-filter d-flex flex-wrap gap-2 mt-3">
-            <button 
-              class="btn btn-sm" 
-              :class="activeTag === '' ? 'btn-primary' : 'btn-outline-primary'" 
-              @click="filterByTag('')"
-            >
-              All
-            </button>
-            <button 
-              v-for="tag in allTags" 
-              :key="tag" 
-              class="btn btn-sm" 
-              :class="activeTag === tag ? 'btn-primary' : 'btn-outline-primary'"
-              @click="filterByTag(tag)"
-            >
-              {{ tag }}
-            </button>
-          </div>
         </div>
         
         <!-- Facts list -->
