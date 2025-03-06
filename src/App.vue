@@ -67,7 +67,7 @@
   <footer class="custom-footer mt-auto">
     <div class="container text-center">
       <p>
-        <strong>Facts Website</strong> - Learn something new every day
+        <strong>Facts Website</strong> - Learn something new every day - made with replit
       </p>
     </div>
   </footer>
