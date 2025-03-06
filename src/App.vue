@@ -37,6 +37,9 @@
           
           <div v-else class="facts-list">
             <div v-for="(fact, index) in filteredFacts" :key="index" class="card fact-card mb-3 shadow-sm">
+              <div v-if="fact.image" class="fact-image-container">
+                <img :src="fact.image" class="fact-image card-img-top" alt="Illustration for fact" />
+              </div>
               <div class="card-body">
                 <p class="fact-text mb-2">{{ fact.text }}</p>
                 <div class="d-flex justify-content-between align-items-center">
@@ -78,37 +81,44 @@ const loading = ref(true);
 const searchQuery = ref('');
 const activeTag = ref('');
 
-// Sample facts database with tags
+// Sample facts database with tags and images
 interface Fact {
   text: string;
   tags: string[];
+  image?: string;
 }
 
-// Combine all facts into a single array with tags
+// Combine all facts into a single array with tags and images
 const allFacts = ref<Fact[]>([
   { 
     text: 'The shortest war in history was between Britain and Zanzibar in 1896. It lasted only 38 minutes.',
-    tags: ['History', 'War', 'Britain', 'Zanzibar']
+    tags: ['History', 'War', 'Britain', 'Zanzibar'],
+    image: 'https://images.unsplash.com/photo-1579532536935-619928decd08?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
   },
   { 
     text: 'Ancient Egyptians used to use slabs of stone as pillows.',
-    tags: ['History', 'Egypt', 'Lifestyle']
+    tags: ['History', 'Egypt', 'Lifestyle'],
+    image: 'https://images.unsplash.com/photo-1560152789-8d8e1e979611?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
   },
   { 
     text: 'The first known contraceptive was crocodile dung, used by ancient Egyptians.',
-    tags: ['History', 'Egypt', 'Medicine'] 
+    tags: ['History', 'Egypt', 'Medicine'],
+    image: 'https://images.unsplash.com/photo-1591825729269-caeb344f6df2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
   },
   { 
     text: 'Vikings used the skulls of their enemies as drinking vessels.',
-    tags: ['History', 'Vikings', 'Warfare']
+    tags: ['History', 'Vikings', 'Warfare'],
+    image: 'https://images.unsplash.com/photo-1598545549693-6c453069d0c8?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
   },
   { 
     text: 'Bananas are berries, but strawberries are not.',
-    tags: ['Science', 'Food', 'Plants']
+    tags: ['Science', 'Food', 'Plants'],
+    image: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
   },
   { 
     text: 'A day on Venus is longer than a year on Venus.',
-    tags: ['Science', 'Space', 'Planets']
+    tags: ['Science', 'Space', 'Planets'],
+    image: 'https://images.unsplash.com/photo-1614732414444-096e5f1122d5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
   },
   { 
     text: 'Honey never spoils. Archaeologists have found pots of honey in ancient Egyptian tombs that are over 3,000 years old and still perfectly good to eat.',
@@ -243,6 +253,23 @@ onMounted(() => {
   border-radius: 8px;
   background-color: #fff;
   border: none;
+  overflow: hidden;
+}
+
+.fact-image-container {
+  height: 200px;
+  overflow: hidden;
+}
+
+.fact-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.fact-card:hover .fact-image {
+  transform: scale(1.05);
 }
 
 .fact-card:hover {
