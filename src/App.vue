@@ -1,48 +1,51 @@
 
 <template>
-  <header class="hero is-primary">
-    <div class="hero-body">
-      <div class="container has-text-centered">
-        <h1 class="title">Amazing Facts</h1>
-        <p class="subtitle">Discover something new every day!</p>
-      </div>
+  <header class="text-center text-white gradient-header py-5">
+    <div class="container">
+      <h1 class="display-4">Amazing Facts</h1>
+      <p class="lead">Discover something new every day!</p>
     </div>
   </header>
 
-  <main class="section">
-    <div class="container">
-      <div class="box fact-box">
-        <div v-if="loading" class="has-text-centered">
-          <p>Loading fact...</p>
+  <main class="container py-4">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card shadow-sm fact-box mb-4">
+          <div class="card-body">
+            <div v-if="loading" class="text-center py-4">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            <div v-else class="py-2">
+              <p class="fact-text">{{ currentFact }}</p>
+              <p class="fact-category">Category: {{ currentCategory }}</p>
+            </div>
+          </div>
         </div>
-        <div v-else>
-          <p class="fact-text">{{ currentFact }}</p>
-          <p class="fact-category">Category: {{ currentCategory }}</p>
-        </div>
-      </div>
-      
-      <div class="field is-grouped is-grouped-centered mt-5">
-        <div class="control">
-          <button @click="getRandomFact" class="button is-primary is-medium">
+        
+        <div class="d-flex flex-column flex-sm-row justify-content-center gap-2 mb-4">
+          <button @click="getRandomFact" class="btn btn-custom btn-lg">
             New Fact
           </button>
-        </div>
-        <div class="control">
-          <div class="select is-medium">
-            <select v-model="selectedCategory" @change="getFactByCategory">
-              <option value="">All Categories</option>
-              <option v-for="category in categories" :key="category" :value="category">
-                {{ category }}
-              </option>
-            </select>
-          </div>
+          <select 
+            v-model="selectedCategory" 
+            @change="getFactByCategory" 
+            class="form-select form-select-lg"
+            aria-label="Select category"
+          >
+            <option value="">All Categories</option>
+            <option v-for="category in categories" :key="category" :value="category">
+              {{ category }}
+            </option>
+          </select>
         </div>
       </div>
     </div>
   </main>
 
-  <footer class="footer">
-    <div class="content has-text-centered">
+  <footer class="custom-footer mt-auto">
+    <div class="container text-center">
       <p>
         <strong>Facts Website</strong> - Learn something new every day
       </p>
@@ -154,15 +157,13 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 2rem;
-  background-color: #f8f9fa;
+  background-color: #fff;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
+  border: none;
 }
 
 .fact-text {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   margin-bottom: 1rem;
   text-align: center;
   line-height: 1.6;
@@ -172,9 +173,28 @@ onMounted(() => {
   text-align: center;
   font-style: italic;
   color: #666;
+  margin-bottom: 0;
 }
 
-.mt-5 {
-  margin-top: 2rem;
+/* Add Bootstrap's responsive padding/margin classes */
+@media (max-width: 576px) {
+  .fact-text {
+    font-size: 1.1rem;
+  }
+  
+  .btn, .form-select {
+    width: 100%;
+  }
+}
+
+/* Make sure the page is at least as tall as the viewport */
+html, body, #app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
 }
 </style>
