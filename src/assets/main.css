@@ -6,31 +6,29 @@ body {
   background-color: #f0f2f5;
 }
 
-.hero.is-primary {
+.gradient-header {
   background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
 }
 
-.button.is-primary {
+.btn-custom {
   background-color: #6a11cb;
+  color: white;
   transition: all 0.3s ease;
 }
 
-.button.is-primary:hover {
+.btn-custom:hover {
   background-color: #5a0cb8;
+  color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.footer {
+.custom-footer {
   background-color: #fafafa;
   padding: 3rem 1.5rem;
   margin-top: 2rem;
 }
 
-.select select {
-  border-color: #6a11cb;
-}
-
-.select:not(.is-multiple):not(.is-loading)::after {
+.form-select {
   border-color: #6a11cb;
 }

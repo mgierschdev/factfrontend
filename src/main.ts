@@ -2,8 +2,8 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 
-// Import Bulma CSS
-import 'bulma/css/bulma.min.css'
+// Import Bootstrap CSS
+import 'bootstrap/dist/css/bootstrap.min.css'
 import './assets/main.css'
 
 createApp(App).mount('#app')
