@@ -37,24 +37,18 @@
           
           <div v-else class="facts-list">
             <div v-for="(fact, index) in filteredFacts" :key="index" class="card fact-card mb-3 shadow-sm">
-              <div v-if="fact.image" class="fact-image-container">
-                <img :src="fact.image" class="fact-image card-img-top" alt="Illustration for fact" />
-              </div>
               <div class="card-body">
                 <p class="fact-text mb-2">{{ fact.text }}</p>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="fact-tags">
-                    <span 
-                      v-for="tag in fact.tags" 
-                      :key="tag" 
-                      class="badge rounded-pill me-1"
-                      :class="getTagClass(tag)"
-                      @click="filterByTag(tag)"
-                    >
-                      {{ tag }}
-                    </span>
-                  </div>
-                  <small class="text-muted">Fact #{{ index + 1 }}</small>
+                <div class="fact-tags">
+                  <span 
+                    v-for="tag in fact.tags" 
+                    :key="tag" 
+                    class="badge rounded-pill me-1"
+                    :class="getTagClass(tag)"
+                    @click="filterByTag(tag)"
+                  >
+                    {{ tag }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -256,21 +250,7 @@ onMounted(() => {
   overflow: hidden;
 }
 
-.fact-image-container {
-  height: 200px;
-  overflow: hidden;
-}
-
-.fact-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.fact-card:hover .fact-image {
-  transform: scale(1.05);
-}
+/* Images have been removed */
 
 .fact-card:hover {
   transform: translateY(-3px);
