@@ -8,37 +8,73 @@
   </header>
 
   <main class="container py-4">
-    <div class="row justify-content-center">
+    <div class="row justify-content-center mb-4">
       <div class="col-md-8">
-        <div class="card shadow-sm fact-box mb-4">
-          <div class="card-body">
-            <div v-if="loading" class="text-center py-4">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-            </div>
-            <div v-else class="py-2">
-              <p class="fact-text">{{ currentFact }}</p>
-              <p class="fact-category">Category: {{ currentCategory }}</p>
-            </div>
+        <!-- Search and filter section -->
+        <div class="search-container mb-4">
+          <div class="input-group mb-3">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input 
+              type="text" 
+              class="form-control form-control-lg" 
+              placeholder="Search facts..." 
+              v-model="searchQuery"
+            >
+          </div>
+          
+          <div class="tags-filter d-flex flex-wrap gap-2 mt-3">
+            <button 
+              class="btn btn-sm" 
+              :class="activeTag === '' ? 'btn-primary' : 'btn-outline-primary'" 
+              @click="filterByTag('')"
+            >
+              All
+            </button>
+            <button 
+              v-for="tag in allTags" 
+              :key="tag" 
+              class="btn btn-sm" 
+              :class="activeTag === tag ? 'btn-primary' : 'btn-outline-primary'"
+              @click="filterByTag(tag)"
+            >
+              {{ tag }}
+            </button>
           </div>
         </div>
         
-        <div class="d-flex flex-column flex-sm-row justify-content-center gap-2 mb-4">
-          <button @click="getRandomFact" class="btn btn-custom btn-lg">
-            New Fact
-          </button>
-          <select 
-            v-model="selectedCategory" 
-            @change="getFactByCategory" 
-            class="form-select form-select-lg"
-            aria-label="Select category"
-          >
-            <option value="">All Categories</option>
-            <option v-for="category in categories" :key="category" :value="category">
-              {{ category }}
-            </option>
-          </select>
+        <!-- Facts list -->
+        <div v-if="loading" class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+        
+        <div v-else>
+          <div v-if="filteredFacts.length === 0" class="text-center py-5">
+            <p class="fs-5">No facts found matching your search.</p>
+          </div>
+          
+          <div v-else class="facts-list">
+            <div v-for="(fact, index) in filteredFacts" :key="index" class="card fact-card mb-3 shadow-sm">
+              <div class="card-body">
+                <p class="fact-text mb-2">{{ fact.text }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="fact-tags">
+                    <span 
+                      v-for="tag in fact.tags" 
+                      :key="tag" 
+                      class="badge rounded-pill me-1"
+                      :class="getTagClass(tag)"
+                      @click="filterByTag(tag)"
+                    >
+                      {{ tag }}
+                    </span>
+                  </div>
+                  <small class="text-muted">Fact #{{ index + 1 }}</small>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -54,136 +90,230 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-
-// Available fact categories
-const categories = ref([
-  'History', 'Science', 'Geography', 'Animals', 'Technology', 'Space'
-]);
+import { ref, computed, onMounted } from 'vue';
 
 // UI state
-const loading = ref(false);
-const currentFact = ref('');
-const currentCategory = ref('');
-const selectedCategory = ref('');
+const loading = ref(true);
+const searchQuery = ref('');
+const activeTag = ref('');
 
-// Sample facts database by category
-const factsDatabase = {
-  'History': [
-    'The shortest war in history was between Britain and Zanzibar in 1896. It lasted only 38 minutes.',
-    'Ancient Egyptians used to use slabs of stone as pillows.',
-    'The first known contraceptive was crocodile dung, used by ancient Egyptians.',
-    'Vikings used the skulls of their enemies as drinking vessels.'
-  ],
-  'Science': [
-    'Bananas are berries, but strawberries are not.',
-    'A day on Venus is longer than a year on Venus.',
-    'Honey never spoils. Archaeologists have found pots of honey in ancient Egyptian tombs that are over 3,000 years old and still perfectly good to eat.',
-    'Human DNA is 99.9% identical from person to person.'
-  ],
-  'Geography': [
-    'Alaska is the easternmost, westernmost, and northernmost state in the United States.',
-    'There is a town called "Batman" in Turkey.',
-    'Russia has 11 time zones.',
-    'The coldest inhabited place on Earth is Oymyakon, Russia, where the temperature once dropped to -71.2°C (-96.16°F).'
-  ],
-  'Animals': [
-    'Octopuses have three hearts.',
-    'Flamingos can only eat with their heads upside down.',
-    'A group of flamingos is called a "flamboyance".',
-    'Cows have best friends and get stressed when they are separated.'
-  ],
-  'Technology': [
-    'The first computer bug was an actual real-life bug. A moth was found in the Harvard Mark II computer in 1947.',
-    'The QWERTY keyboard layout was designed to slow typists down.',
-    'More than 90% of the world\'s currency is digital.',
-    'The first computer programmer was a woman named Ada Lovelace.'
-  ],
-  'Space': [
-    'One million Earths could fit inside the Sun.',
-    'There is a planet made of diamonds, called 55 Cancri e.',
-    'A year on Mercury is just 88 days long.',
-    'The footprints on the Moon will be there for at least 100 million years.'
-  ]
-};
-
-// Get a random fact from all categories
-function getRandomFact() {
-  loading.value = true;
-  
-  // Simulate API call with timeout
-  setTimeout(() => {
-    const allCategories = Object.keys(factsDatabase);
-    const randomCategory = allCategories[Math.floor(Math.random() * allCategories.length)];
-    const factsInCategory = factsDatabase[randomCategory as keyof typeof factsDatabase];
-    const randomFact = factsInCategory[Math.floor(Math.random() * factsInCategory.length)];
-    
-    currentFact.value = randomFact;
-    currentCategory.value = randomCategory;
-    loading.value = false;
-    selectedCategory.value = '';
-  }, 500);
+// Sample facts database with tags
+interface Fact {
+  text: string;
+  tags: string[];
 }
 
-// Get a fact from selected category
-function getFactByCategory() {
-  if (!selectedCategory.value) {
-    getRandomFact();
-    return;
+// Combine all facts into a single array with tags
+const allFacts = ref<Fact[]>([
+  { 
+    text: 'The shortest war in history was between Britain and Zanzibar in 1896. It lasted only 38 minutes.',
+    tags: ['History', 'War', 'Britain', 'Zanzibar']
+  },
+  { 
+    text: 'Ancient Egyptians used to use slabs of stone as pillows.',
+    tags: ['History', 'Egypt', 'Lifestyle']
+  },
+  { 
+    text: 'The first known contraceptive was crocodile dung, used by ancient Egyptians.',
+    tags: ['History', 'Egypt', 'Medicine'] 
+  },
+  { 
+    text: 'Vikings used the skulls of their enemies as drinking vessels.',
+    tags: ['History', 'Vikings', 'Warfare']
+  },
+  { 
+    text: 'Bananas are berries, but strawberries are not.',
+    tags: ['Science', 'Food', 'Plants']
+  },
+  { 
+    text: 'A day on Venus is longer than a year on Venus.',
+    tags: ['Science', 'Space', 'Planets']
+  },
+  { 
+    text: 'Honey never spoils. Archaeologists have found pots of honey in ancient Egyptian tombs that are over 3,000 years old and still perfectly good to eat.',
+    tags: ['Science', 'Food', 'Egypt', 'History']
+  },
+  { 
+    text: 'Human DNA is 99.9% identical from person to person.',
+    tags: ['Science', 'Biology', 'Genetics']
+  },
+  { 
+    text: 'Alaska is the easternmost, westernmost, and northernmost state in the United States.',
+    tags: ['Geography', 'USA', 'Alaska']
+  },
+  { 
+    text: 'There is a town called "Batman" in Turkey.',
+    tags: ['Geography', 'Turkey', 'Trivia']
+  },
+  { 
+    text: 'Russia has 11 time zones.',
+    tags: ['Geography', 'Russia', 'Time']
+  },
+  { 
+    text: 'The coldest inhabited place on Earth is Oymyakon, Russia, where the temperature once dropped to -71.2°C (-96.16°F).',
+    tags: ['Geography', 'Russia', 'Climate', 'Temperature']
+  },
+  { 
+    text: 'Octopuses have three hearts.',
+    tags: ['Animals', 'Marine Life', 'Biology']
+  },
+  { 
+    text: 'Flamingos can only eat with their heads upside down.',
+    tags: ['Animals', 'Birds', 'Behavior']
+  },
+  { 
+    text: 'A group of flamingos is called a "flamboyance".',
+    tags: ['Animals', 'Birds', 'Collective Nouns']
+  },
+  { 
+    text: 'Cows have best friends and get stressed when they are separated.',
+    tags: ['Animals', 'Mammals', 'Behavior']
+  },
+  { 
+    text: 'The first computer bug was an actual real-life bug. A moth was found in the Harvard Mark II computer in 1947.',
+    tags: ['Technology', 'Computers', 'History']
+  },
+  { 
+    text: 'The QWERTY keyboard layout was designed to slow typists down.',
+    tags: ['Technology', 'Computers', 'Design']
+  },
+  { 
+    text: 'More than 90% of the world\'s currency is digital.',
+    tags: ['Technology', 'Finance', 'Economy']
+  },
+  { 
+    text: 'The first computer programmer was a woman named Ada Lovelace.',
+    tags: ['Technology', 'Computers', 'History', 'Women']
+  },
+  { 
+    text: 'One million Earths could fit inside the Sun.',
+    tags: ['Space', 'Sun', 'Astronomy']
+  },
+  { 
+    text: 'There is a planet made of diamonds, called 55 Cancri e.',
+    tags: ['Space', 'Planets', 'Astronomy']
+  },
+  { 
+    text: 'A year on Mercury is just 88 days long.',
+    tags: ['Space', 'Planets', 'Mercury', 'Time']
+  },
+  { 
+    text: 'The footprints on the Moon will be there for at least 100 million years.',
+    tags: ['Space', 'Moon', 'Astronomy', 'NASA']
   }
-  
-  loading.value = true;
-  
-  // Simulate API call with timeout
-  setTimeout(() => {
-    const factsInCategory = factsDatabase[selectedCategory.value as keyof typeof factsDatabase];
-    const randomFact = factsInCategory[Math.floor(Math.random() * factsInCategory.length)];
+]);
+
+// Get all unique tags for the filter buttons
+const allTags = computed(() => {
+  const tagSet = new Set<string>();
+  allFacts.value.forEach(fact => {
+    fact.tags.forEach(tag => tagSet.add(tag));
+  });
+  return Array.from(tagSet).sort();
+});
+
+// Filter facts based on search query and active tag
+const filteredFacts = computed(() => {
+  return allFacts.value.filter(fact => {
+    // First filter by tag if one is selected
+    const tagMatch = activeTag.value === '' || fact.tags.includes(activeTag.value);
     
-    currentFact.value = randomFact;
-    currentCategory.value = selectedCategory.value;
-    loading.value = false;
-  }, 500);
+    // Then filter by search query
+    const searchMatch = searchQuery.value === '' || 
+      fact.text.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      fact.tags.some(tag => tag.toLowerCase().includes(searchQuery.value.toLowerCase()));
+    
+    return tagMatch && searchMatch;
+  });
+});
+
+// Filter by tag
+function filterByTag(tag: string) {
+  activeTag.value = tag;
 }
 
-// Load a random fact when component mounts
+// Get random color class for tag
+function getTagClass(tag: string) {
+  const tagClasses = {
+    'History': 'bg-primary',
+    'Science': 'bg-success',
+    'Geography': 'bg-info',
+    'Animals': 'bg-warning',
+    'Technology': 'bg-danger',
+    'Space': 'bg-purple'
+  };
+  
+  // Return the class if it exists in our map, otherwise return a default
+  return tagClasses[tag as keyof typeof tagClasses] || 'bg-secondary';
+}
+
+// Simulate loading data
 onMounted(() => {
-  getRandomFact();
+  setTimeout(() => {
+    loading.value = false;
+  }, 500);
 });
 </script>
 
 <style scoped>
-.fact-box {
-  min-height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #fff;
+.fact-card {
+  transition: transform 0.2s ease-in-out;
+  cursor: default;
   border-radius: 8px;
+  background-color: #fff;
   border: none;
 }
 
+.fact-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1) !important;
+}
+
 .fact-text {
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
-  text-align: center;
+  font-size: 1.1rem;
   line-height: 1.6;
 }
 
-.fact-category {
-  text-align: center;
-  font-style: italic;
-  color: #666;
-  margin-bottom: 0;
+.fact-tags .badge {
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-/* Add Bootstrap's responsive padding/margin classes */
+.fact-tags .badge:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+.tags-filter .btn {
+  transition: all 0.2s ease;
+}
+
+.bg-purple {
+  background-color: #6f42c1;
+  color: white;
+}
+
+.search-container {
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Mobile optimizations */
 @media (max-width: 576px) {
   .fact-text {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
   
-  .btn, .form-select {
-    width: 100%;
+  .tags-filter {
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    flex-wrap: nowrap !important;
+  }
+  
+  .tags-filter .btn {
+    white-space: nowrap;
   }
 }
 
